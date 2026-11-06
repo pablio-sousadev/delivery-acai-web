@@ -1,0 +1,92 @@
+{
+  "estabelecimento": {
+    "nome": "Açaí da Hora",
+    "instagram": "@acaidahora.delivery1",
+    "whatsapp": "(61) 99561-0630",
+    "local": "Condomínio São Francisco — Águas Quentes"
+  },
+  "produtos": {
+    "acai": [
+      {
+        "id": "acai_300",
+        "categoria": "tradicional",
+        "nome": "Açaí Tradicional",
+        "tamanho": "Pequeno (300ml)",
+        "preco": 14.0,
+        "max_acompanhamentos_gratis": 5
+      },
+      {
+        "id": "acai_500",
+        "categoria": "tradicional",
+        "nome": "Açaí Tradicional",
+        "tamanho": "Médio (500ml)",
+        "preco": 19.0,
+        "max_acompanhamentos_gratis": 5
+      },
+      {
+        "id": "acai_700",
+        "categoria": "tradicional",
+        "nome": "Açaí Tradicional",
+        "tamanho": "Grande (700ml)",
+        "preco": 25.0,
+        "max_acompanhamentos_gratis": 5
+      },
+      {
+        "id": "acai_mousse_300",
+        "categoria": "mousse",
+        "nome": "Açaí com Mousse de Maracujá",
+        "tamanho": "Pequeno (300ml)",
+        "preco": 17.0,
+        "max_acompanhamentos_gratis": 5
+      },
+      {
+        "id": "acai_mousse_500",
+        "categoria": "mousse",
+        "nome": "Açaí com Mousse de Maracujá",
+        "tamanho": "Médio (500ml)",
+        "preco": 22.0,
+        "max_acompanhamentos_gratis": 5
+      },
+      {
+        "id": "acai_mousse_700",
+        "categoria": "mousse",
+        "nome": "Açaí com Mousse de Maracujá",
+        "tamanho": "Grande (700ml)",
+        "preco": 28.0,
+        "max_acompanhamentos_gratis": 5
+      }
+    ],
+    "acompanhamentos_inclusos": [
+      "Banana",
+      "Granola",
+      "Leite condensado",
+      "Leite em pó",
+      "Amendoim",
+      "Confetes",
+      "Paçoca",
+      "Gotas de chocolate",
+      "Farinha láctea"
+    ],
+    "extras_pagos": [
+      { "id": "extra_kiwi", "nome": "Kiwi", "preco": 4.0 },
+      { "id": "extra_morango", "nome": "Morango", "preco": 4.0 },
+      { "id": "extra_nutella", "nome": "Nutella", "preco": 4.0 }
+    ],
+    "polpas": [
+      { "id": "polpa_abacaxi", "nome": "Abacaxi", "preco_unidade": 3.0, "preco_pacote_10": 21.0 },
+      { "id": "polpa_abacaxi_hortela", "nome": "Abacaxi com hortelã", "preco_unidade": 3.0, "preco_pacote_10": 21.0 },
+      { "id": "polpa_acerola", "nome": "Acerola", "preco_unidade": 3.0, "preco_pacote_10": 21.0 },
+      { "id": "polpa_acerola_laranja", "nome": "Acerola com laranja", "preco_unidade": 3.0, "preco_pacote_10": 21.0 },
+      { "id": "polpa_caju", "nome": "Caju", "preco_unidade": 2.0, "preco_pacote_10": 17.0 },
+      { "id": "polpa_caja", "nome": "Cajá", "preco_unidade": 3.0, "preco_pacote_10": 24.0 },
+      { "id": "polpa_caja_manga", "nome": "Cajá com manga", "preco_unidade": 2.0, "preco_pacote_10": 14.0 },
+      { "id": "polpa_cupuacu", "nome": "Cupuaçu", "preco_unidade": 3.5, "preco_pacote_10": 27.0 },
+      { "id": "polpa_goiaba", "nome": "Goiaba", "preco_unidade": 2.0, "preco_pacote_10": 14.0 },
+      { "id": "polpa_graviola", "nome": "Graviola", "preco_unidade": 3.0, "preco_pacote_10": 20.0 },
+      { "id": "polpa_manga", "nome": "Manga", "preco_unidade": 2.0, "preco_pacote_10": 16.0 },
+      { "id": "polpa_maracuja", "nome": "Maracujá", "preco_unidade": 3.5, "preco_pacote_10": 29.0 },
+      { "id": "polpa_morango", "nome": "Morango", "preco_unidade": 3.0, "preco_pacote_10": 21.0 },
+      { "id": "polpa_tamarindo", "nome": "Tamarindo", "preco_unidade": 2.0, "preco_pacote_10": 16.0 }
+    ]
+  }
+}
