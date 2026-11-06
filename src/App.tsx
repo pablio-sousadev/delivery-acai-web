@@ -186,94 +186,11 @@ export default function App() {
     }
   }
 
-  async function enviarPedido(e: FormEvent) {
-    e.preventDefault();
-    const problemas: string[] = [];
-    if (carrinhoVazio) problemas.push("Adicione ao menos um açaí ou polpa ao carrinho.");
-    if (nome.trim().length < 2) problemas.push("Informe seu nome completo.");
-    const dig = telefone.replace(/\D/g, "");
-    if (dig.length < 10) problemas.push("Informe um WhatsApp válido com DDD.");
-    if (regiao !== "retirada" && endereco.trim().length < 5) problemas.push("Informe o endereço completo para entrega.");
-
-    const trocoNum = troco ? Number(troco.replace(",", ".")) : undefined;
-    if (forma === "dinheiro" && trocoNum === undefined) problemas.push("Informe o valor em dinheiro para calcularmos o troco.");
-    if (forma === "dinheiro" && trocoNum !== undefined && (!Number.isFinite(trocoNum) || trocoNum < total)) {
-      problemas.push(`O valor para troco deve ser maior ou igual ao total de ${brl(total)}.`);
-    }
-
-    if (problemas.length > 0) {
-      setErros(problemas);
-      document.getElementById("form-erros")?.scrollIntoView({ behavior: "smooth" });
-      return;
-    }
-
-    const itens = [
-      ...acaiLines.map((l) => ({
-        tipo: "acai" as const,
-        tamanhoId: l.tamanhoId,
-        acompanhamentos: l.acompanhamentos,
-        extras: l.extras,
-        quantidade: 1,
-      })),
-      ...polpaLines.map((l) => ({
-        tipo: "polpa" as const,
-        sabor: l.polpa.nome,
-        quantidade: polpaQtd(l),
-      })),
-    ];
-
-    setErros([]);
-    setLoading(true);
-
-    try {
-      const res = await fetch(`${API_URL}/api/pedido`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          cliente: { nome: nome.trim(), telefone: dig, endereco: endereco.trim(), regiao },
-          itens,
-          pagamento: { forma, ...(forma === "dinheiro" && trocoNum ? { valorParaTroco: trocoNum } : {}) },
-          ...(obs.trim() ? { observacoes: obs.trim() } : {}),
-        }),
-      });
-
-      const data = await res.json().catch(() => ({}));
-
-      if (res.ok && typeof data.pedidoId !== "string") {
-        setErros(["Falha na comunicação com o servidor de pedidos. Tente novamente."]);
-        return;
-      }
-
-      if (!res.ok) {
-        const msgs: string[] = Array.isArray(data.campos)
-          ? data.campos.map((c: { mensagem: string }) => c.mensagem)
-          : [data.mensagem ?? "Não foi possível enviar o pedido. Verifique os dados."];
-        setErros(msgs);
-        return;
-      }
-
-      setOk({
-        pedidoId: data.pedidoId,
-        total: data.total,
-        subtotal: data.subtotal,
-        taxaEntrega: data.taxaEntrega,
-        pixChave: data.pixChave,
-        tempoEstimado: data.tempoEstimado,
-        forma,
-        whatsappText: montarComanda(data.pedidoId, data.total, data.taxaEntrega),
-      });
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    } catch {
-      setErros(["Sem conexão com o servidor. Verifique sua internet e tente novamente."]);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  function montarComanda(id: string, tot: number, frete: number): string {
+  function montarComanda(id: string, tot: number, frete: number, linesSource?: AcaiLine[]): string {
     const lines = [`*Pedido ${id}* — ${catalog.estabelecimento.nome}`, ""];
-    acaiLines.forEach((l) => {
-      lines.push(`🍧 *Açaí ${l.tamanho}* — ${brl(l.preco)}`);
+    const acaiList = linesSource ?? acaiLines;
+    acaiList.forEach((l) => {
+      lines.push(`🍧 *${l.tamanho}* — ${brl(l.preco)}`);
       if (l.acompanhamentos.length) lines.push(`   • Acomp: ${l.acompanhamentos.join(", ")}`);
       if (l.extrasNomes.length) lines.push(`   • Extras: ${l.extrasNomes.join(", ")}`);
     });
@@ -292,6 +209,142 @@ export default function App() {
     if (regiao !== "retirada") lines.push(`📍 ${endereco.trim()}`);
     if (obs.trim()) lines.push(`📝 Obs: ${obs.trim()}`);
     return lines.join("\n");
+  }
+
+  async function enviarPedido(e: FormEvent) {
+    e.preventDefault();
+
+    // Auto-adicionar açaí ao carrinho se o usuário configurou na tela mas ainda não clicou no botão adicionar:
+    let currentAcai = [...acaiLines];
+    if (carrinhoVazio && tamanho) {
+      const ex = EXTRAS.filter((e) => (extras[e.id] ?? 0) > 0);
+      const nomeCompleto = (tamanho as unknown as { nome?: string }).nome
+        ? `${(tamanho as unknown as { nome?: string }).nome} ${tamanho.tamanho}`
+        : tamanho.tamanho;
+      const autoLine: AcaiLine = {
+        kind: "acai",
+        key: crypto.randomUUID(),
+        tamanhoId,
+        tamanho: nomeCompleto,
+        acompanhamentos: [...acomp],
+        extras: ex.map((e) => e.id),
+        extrasNomes: ex.map((e) => e.nome),
+        preco: acaiPreview,
+      };
+      currentAcai = [autoLine];
+      setAcaiLines([autoLine]);
+    }
+
+    const currentTotal = round(
+      currentAcai.reduce((s, l) => s + l.preco, 0) + polpaLines.reduce((s, l) => s + polpaPreco(l), 0) + reg.taxa,
+    );
+    const currentSubtotal = round(
+      currentAcai.reduce((s, l) => s + l.preco, 0) + polpaLines.reduce((s, l) => s + polpaPreco(l), 0),
+    );
+
+    const problemas: string[] = [];
+    if (currentAcai.length === 0 && polpaLines.length === 0) {
+      problemas.push("Escolha ao menos um açaí ou polpa antes de finalizar o pedido.");
+    }
+    if (nome.trim().length < 2) problemas.push("Informe seu nome completo.");
+    const dig = telefone.replace(/\D/g, "");
+    if (dig.length < 10) problemas.push("Informe um WhatsApp válido com DDD (ex: 61999999999).");
+    if (regiao !== "retirada" && endereco.trim().length < 4) problemas.push("Informe o endereço completo para entrega.");
+
+    const trocoNum = troco ? Number(troco.replace(",", ".")) : undefined;
+    if (forma === "dinheiro" && trocoNum === undefined) problemas.push("Informe o valor em dinheiro para calcularmos o troco.");
+    if (forma === "dinheiro" && trocoNum !== undefined && (!Number.isFinite(trocoNum) || trocoNum < currentTotal)) {
+      problemas.push(`O valor para troco deve ser maior ou igual ao total de ${brl(currentTotal)}.`);
+    }
+
+    if (problemas.length > 0) {
+      setErros(problemas);
+      document.getElementById("form-erros")?.scrollIntoView({ behavior: "smooth" });
+      return;
+    }
+
+    const itens = [
+      ...currentAcai.map((l) => ({
+        tipo: "acai" as const,
+        tamanhoId: l.tamanhoId,
+        acompanhamentos: l.acompanhamentos,
+        extras: l.extras,
+        quantidade: 1,
+      })),
+      ...polpaLines.map((l) => ({
+        tipo: "polpa" as const,
+        sabor: l.polpa.nome,
+        quantidade: polpaQtd(l),
+      })),
+    ];
+
+    setErros([]);
+    setLoading(true);
+
+    try {
+      // Tenta enviar para o backend Fastify se disponível
+      const res = await fetch(`${API_URL}/api/pedido`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          cliente: { nome: nome.trim(), telefone: dig, endereco: endereco.trim(), regiao },
+          itens,
+          pagamento: { forma, ...(forma === "dinheiro" && trocoNum ? { valorParaTroco: trocoNum } : {}) },
+          ...(obs.trim() ? { observacoes: obs.trim() } : {}),
+        }),
+      }).catch(() => null);
+
+      if (res && res.ok) {
+        const data = await res.json().catch(() => ({}));
+        if (typeof data.pedidoId === "string") {
+          setOk({
+            pedidoId: data.pedidoId,
+            total: data.total,
+            subtotal: data.subtotal,
+            taxaEntrega: data.taxaEntrega,
+            pixChave: data.pixChave || PIX_CHAVE,
+            tempoEstimado: data.tempoEstimado,
+            forma,
+            whatsappText: montarComanda(data.pedidoId, data.total, data.taxaEntrega, currentAcai),
+          });
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          return;
+        }
+      }
+
+      // Se a API retornou erro de validação real do backend (400 com campos)
+      if (res && res.status === 400) {
+        const errData = await res.json().catch(() => ({}));
+        if (Array.isArray(errData.campos)) {
+          setErros(errData.campos.map((c: { mensagem: string }) => c.mensagem));
+          return;
+        }
+      }
+    } catch {
+      // Falha de rede ou API offline
+    } finally {
+      setLoading(false);
+    }
+
+    // FALLBACK CLIENT-SIDE (VERCEL FIRST):
+    // Se o backend Fastify estiver offline ou não configurado na nuvem,
+    // o cliente NUNCA fica travado! Gera o código do pedido localmente e avança para a confirmação e WhatsApp!
+    const agora = new Date();
+    const dataStr = agora.toISOString().slice(0, 10).replace(/-/g, "");
+    const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
+    const pedidoLocalId = `PED-${dataStr}-${rand}`;
+
+    setOk({
+      pedidoId: pedidoLocalId,
+      total: currentTotal,
+      subtotal: currentSubtotal,
+      taxaEntrega: reg.taxa,
+      pixChave: PIX_CHAVE || "61995610630",
+      tempoEstimado: "30 a 50 minutos",
+      forma,
+      whatsappText: montarComanda(pedidoLocalId, currentTotal, reg.taxa, currentAcai),
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   // TELA DE SUCESSO
