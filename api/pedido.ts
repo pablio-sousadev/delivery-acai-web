@@ -193,15 +193,49 @@ export default async function handler(req: any, res: any) {
 
     if (botToken && chatId) {
       try {
+        let replyMarkup: Record<string, unknown> | undefined = undefined;
+
+        if (digTelefone.length >= 10) {
+          const msgRetirada = `Olá, ${cliente.nome}! 🍧 Seu pedido (${pedidoId}) no Açaí da Hora já está pronto te esperando! Pode vir retirar no balcão quando quiser. 🏪✨`;
+          const msgEntrega = `Olá, ${cliente.nome}! 🍧 Seu pedido (${pedidoId}) no Açaí da Hora já está pronto e saindo para entrega! 🛵💨 Nosso entregador já está a caminho.`;
+
+          const linkRetirada = `https://wa.me/${zapTelefone}?text=${encodeURIComponent(msgRetirada)}`;
+          const linkEntrega = `https://wa.me/${zapTelefone}?text=${encodeURIComponent(msgEntrega)}`;
+
+          const inlineKeyboard = regInfo.isRetirada
+            ? [
+                [{ text: "🏪 Avisar: Pronto para Retirada", url: linkRetirada }],
+                [
+                  { text: "🛵 Saiu para Entrega", url: linkEntrega },
+                  { text: "💬 Abrir WhatsApp", url: zapLink },
+                ],
+              ]
+            : [
+                [{ text: "🛵 Avisar: Saiu para Entrega", url: linkEntrega }],
+                [
+                  { text: "🏪 Pronto p/ Retirada", url: linkRetirada },
+                  { text: "💬 Abrir WhatsApp", url: zapLink },
+                ],
+              ];
+
+          replyMarkup = { inline_keyboard: inlineKeyboard };
+        }
+
+        const telegramBody: Record<string, unknown> = {
+          chat_id: chatId,
+          text: telegramMessage,
+          parse_mode: "HTML",
+          disable_web_page_preview: true,
+        };
+
+        if (replyMarkup) {
+          telegramBody.reply_markup = replyMarkup;
+        }
+
         await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            chat_id: chatId,
-            text: telegramMessage,
-            parse_mode: "HTML",
-            disable_web_page_preview: true,
-          }),
+          body: JSON.stringify(telegramBody),
         });
       } catch (tgErr) {
         console.error("Erro ao enviar mensagem para Telegram:", tgErr);
