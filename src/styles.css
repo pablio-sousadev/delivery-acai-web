@@ -843,6 +843,32 @@ body {
   transform: translateY(-1px);
 }
 
+.btn-pix-comprovante {
+  width: 100%;
+  background: var(--brand-purple);
+  color: #ffffff;
+  border: 2px solid var(--brand-purple);
+  padding: 15px 20px;
+  font-size: 1rem;
+  box-shadow: 0 4px 14px rgba(69, 2, 82, 0.24);
+}
+
+.btn-pix-comprovante:hover {
+  background: var(--brand-purple-light);
+  border-color: var(--brand-purple-light);
+  box-shadow: 0 6px 18px rgba(69, 2, 82, 0.32);
+  transform: translateY(-1px);
+}
+
+.btn-pix-comprovante:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(69, 2, 82, 0.22), 0 4px 14px rgba(69, 2, 82, 0.24);
+}
+
+.btn-pix-comprovante:active {
+  transform: translateY(0);
+}
+
 .btn-outline {
   background: transparent;
   color: var(--brand-purple);

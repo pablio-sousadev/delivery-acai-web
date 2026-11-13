@@ -380,20 +380,35 @@ export default function App() {
               </div>
             )}
 
-            {ok.forma === "pix" && pixFinal && (
-              <div className="payment-notice pix-box">
-                <b>📱 Chave Pix para pagamento</b>
-                <div className="copy-pix-row">
-                  <span className="pix-key-display">{pixFinal}</span>
-                  <button type="button" className="btn-copy" onClick={() => copyPixKey(pixFinal)}>
-                    {copiedPix ? "Copiado! ✓" : "Copiar"}
-                  </button>
-                </div>
-                <small style={{ color: "var(--ink-secondary)", marginTop: 4 }}>
-                  Após pagar, envie o comprovante pelo WhatsApp para liberarmos o preparo imediato.
-                </small>
-              </div>
-            )}
+            {ok.forma === "pix" ? (
+              <>
+                {pixFinal ? (
+                  <div className="payment-notice pix-box">
+                    <b>📱 Chave Pix para pagamento</b>
+                    <div className="copy-pix-row">
+                      <span className="pix-key-display">{pixFinal}</span>
+                      <button type="button" className="btn-copy" onClick={() => copyPixKey(pixFinal)}>
+                        {copiedPix ? "Copiado! ✓" : "Copiar"}
+                      </button>
+                    </div>
+                    <small style={{ color: "var(--ink-secondary)", marginTop: 4 }}>
+                      Após pagar, envie o comprovante pelo WhatsApp para liberarmos o preparo imediato.
+                    </small>
+                  </div>
+                ) : null}
+
+                <a
+                  className="btn btn-pix-comprovante"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  href={`https://wa.me/${STORE_WHATSAPP}?text=${encodeURIComponent(
+                    `Comprovante PIX — Pedido ${ok.pedidoId}`,
+                  )}`}
+                >
+                  📎 Enviar Comprovante no WhatsApp
+                </a>
+              </>
+            ) : null}
 
             <a
               className="btn btn-primary"
