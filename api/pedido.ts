@@ -196,7 +196,7 @@ export default async function handler(req: any, res: any) {
         let replyMarkup: Record<string, unknown> | undefined = undefined;
 
         if (digTelefone.length >= 10) {
-          const msgRetirada = `Olá, ${cliente.nome}! 🍧 Seu pedido (${pedidoId}) no Açaí da Hora já está pronto te esperando! Pode vir retirar no balcão quando quiser. 🏪✨`;
+          const msgRetirada = `Olá, ${cliente.nome}! 🍧 Seu pedido (${pedidoId}) no Açaí da Hora já está pronto te esperando! Pode vir retirar quando quiser. 🏪✨`;
           const msgEntrega = `Olá, ${cliente.nome}! 🍧 Seu pedido (${pedidoId}) no Açaí da Hora já está pronto e saindo para entrega! 🛵💨 Nosso entregador já está a caminho.`;
 
           const linkRetirada = `https://wa.me/${zapTelefone}?text=${encodeURIComponent(msgRetirada)}`;
