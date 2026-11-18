@@ -242,7 +242,7 @@ export default async function handler(req: any, res: any) {
       }
     }
 
-    const pixChave = process.env.PIX_CHAVE || "08573986360";
+    const pixChave = process.env.PIX_CHAVE || "61995610630";
     const tempoEstimado = process.env.TEMPO_ESTIMADO || "30 a 50 minutos";
 
     return res.status(200).json({
